@@ -13,6 +13,7 @@ import {
 } from '../services/contentService';
 import Navbar from '../components/Navbar';
 import CategoryRow from '../components/CategoryRow';
+import CategoryDialog from '../components/CategoryDialog';
 import ConfirmDialog from '../components/ConfirmDialog';
 import SubcategoryDialog from '../components/SubcategoryDialog';
 import EmptyState from '../components/EmptyState';
@@ -32,7 +33,7 @@ const AdminPage = () => {
     openConfirmDialog
   } = useContentStore();
 
-  const [newCategoryTitle, setNewCategoryTitle] = useState('');
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [activeTab, setActiveTab] = useState('content');
 
@@ -68,23 +69,13 @@ const AdminPage = () => {
     };
   }, [categories, setSubcategories]);
 
-  const handleAddCategory = async () => {
-    if (!newCategoryTitle.trim()) return;
-
-    // Debug: Check auth state
-    //console.log('Current user:', auth.currentUser);
-    //console.log('User ID:', auth.currentUser?.uid);
-    
+  const handleSaveCategory = async (categoryData) => {
     setIsAddingCategory(true);
     try {
-      await createCategory({
-        titleEn: newCategoryTitle.trim(),
-        titleAr: '' // Can be added later through edit
-      });
-      setNewCategoryTitle('');
+      await createCategory(categoryData);
+      setIsCategoryDialogOpen(false);
     } catch (error) {
       console.error('Error creating category:', error);
-      console.error('Error details:', error.code, error.message);
       setError('Failed to create category: ' + error.message);
     } finally {
       setIsAddingCategory(false);
@@ -134,12 +125,6 @@ const AdminPage = () => {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleAddCategory();
-    }
-  };
-
   const sortedCategories = [...categories].sort((a, b) => a.order - b.order);
 
   // Tab definitions
@@ -186,39 +171,20 @@ const AdminPage = () => {
         {/* Tab Content */}
         {activeTab === 'content' && (
           <div>
-            {/* Add Category Form */}
+            {/* Add Category Button */}
             <div className="category-card" style={{'--stripe-color': 'var(--color-primary-green)'}}>
               <div className="category-header">
-                <h2 className="category-title">Add New Category</h2>
-              </div>
-              <div style={{padding: 'var(--spacing-lg)'}}>
-                <div className="flex gap-3">
-                  <input
-                    type="text"
-                    placeholder="Category title (English)"
-                    value={newCategoryTitle}
-                    onChange={(e) => setNewCategoryTitle(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    className="form-input flex-1"
-                  />
-                  <button
-                    onClick={handleAddCategory}
-                    disabled={isAddingCategory || !newCategoryTitle.trim()}
-                    className="btn-primary"
-                  >
-                    {isAddingCategory ? (
-                      <>
-                        <div className="loading-spinner"></div>
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-4 w-4" />
-                        Add Category
-                      </>
-                    )}
-                  </button>
+                <div>
+                  <h2 className="category-title">Categories</h2>
+                  <div className="category-meta">Manage your content categories</div>
                 </div>
+                <button
+                  onClick={() => setIsCategoryDialogOpen(true)}
+                  className="btn-primary"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Category
+                </button>
               </div>
             </div>
 
@@ -246,7 +212,7 @@ const AdminPage = () => {
                     <div className="category-meta">Create your first category to get started with organizing your content.</div>
                   </div>
                   <button
-                    onClick={() => document.querySelector('input[type="text"]')?.focus()}
+                    onClick={() => setIsCategoryDialogOpen(true)}
                     className="btn-primary"
                   >
                     <Plus className="h-4 w-4" />
@@ -285,6 +251,12 @@ const AdminPage = () => {
           <Templates />
         )}
 
+        <CategoryDialog
+          isOpen={isCategoryDialogOpen}
+          onClose={() => setIsCategoryDialogOpen(false)}
+          onSave={handleSaveCategory}
+          mode="add"
+        />
         <ConfirmDialog />
         <SubcategoryDialog />
       </div>
