@@ -13,12 +13,19 @@ import {
   runTransaction,
   serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { 
+  ref, 
+  uploadBytes, 
+  getDownloadURL, 
+  deleteObject 
+} from 'firebase/storage';
+import { db, storage } from '../lib/firebase';
 
 // Collection references
 const categoriesRef = collection(db, 'categories');
 const subcategoriesRef = collection(db, 'subcategories');
 const glossaryRef = collection(db, 'glossary');
+const diagramsRef = collection(db, 'diagrams');
 
 // Categories operations
 export const watchCategories = (callback) => {
@@ -441,6 +448,285 @@ export const moveGlossaryTermDown = async (termId) => {
         updatedAt: serverTimestamp()
       });
       transaction.update(targetTerm.ref, { 
+        order: currentOrder,
+        updatedAt: serverTimestamp()
+      });
+    }
+  });
+};
+
+// ==================== DIAGRAMS FUNCTIONS ====================
+
+// Upload image to Firebase Storage
+export const uploadDiagramImage = async (file, diagramId) => {
+  try {
+    const fileExtension = file.name.split('.').pop();
+    const fileName = `${diagramId}_${Date.now()}.${fileExtension}`;
+    const storageRef = ref(storage, `diagrams/${fileName}`);
+    
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    
+    return {
+      url: downloadURL,
+      fileName: fileName,
+      originalName: file.name,
+      size: file.size
+    };
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw error;
+  }
+};
+
+// Delete image from Firebase Storage
+export const deleteDiagramImage = async (fileName) => {
+  try {
+    const storageRef = ref(storage, `diagrams/${fileName}`);
+    await deleteObject(storageRef);
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    // Don't throw error if file doesn't exist
+    if (error.code !== 'storage/object-not-found') {
+      throw error;
+    }
+  }
+};
+
+// Get all diagrams
+export const getDiagrams = async () => {
+  try {
+    const snapshot = await getDocs(diagramsRef);
+    const diagrams = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    
+    // Sort by order field, fallback to creation date for items without order
+    return diagrams.sort((a, b) => {
+      const orderA = a.order || 0;
+      const orderB = b.order || 0;
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+      // Fallback to creation date
+      return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
+    });
+  } catch (error) {
+    console.error('Error fetching diagrams:', error);
+    throw error;
+  }
+};
+
+// Subscribe to diagrams real-time updates
+export const subscribeToDiagrams = (callback) => {
+  try {
+    return onSnapshot(diagramsRef, (snapshot) => {
+      const diagrams = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Sort by order field, fallback to creation date for items without order
+      const sortedDiagrams = diagrams.sort((a, b) => {
+        const orderA = a.order || 0;
+        const orderB = b.order || 0;
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+        return (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0);
+      });
+      callback(sortedDiagrams);
+    });
+  } catch (error) {
+    console.error('Error subscribing to diagrams:', error);
+    throw error;
+  }
+};
+
+// Add a new diagram
+export const addDiagram = async (diagramData, imageFile) => {
+  try {
+    // Get the next order number
+    const snapshot = await getDocs(diagramsRef);
+    const maxOrder = snapshot.docs.reduce((max, doc) => {
+      const order = doc.data().order || 0;
+      return Math.max(max, order);
+    }, 0);
+
+    // Create document with initial data
+    const docRef = await addDoc(diagramsRef, {
+      title: diagramData.title,
+      titleArabic: diagramData.titleArabic || '',
+      description: diagramData.description,
+      descriptionArabic: diagramData.descriptionArabic || '',
+      category: diagramData.category || '',
+      order: maxOrder + 1,
+      imageUrl: '',
+      imageFileName: '',
+      imageOriginalName: '',
+      imageSize: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+
+    // Upload image if provided
+    if (imageFile) {
+      const imageData = await uploadDiagramImage(imageFile, docRef.id);
+      
+      // Update document with image data
+      await updateDoc(docRef, {
+        imageUrl: imageData.url,
+        imageFileName: imageData.fileName,
+        imageOriginalName: imageData.originalName,
+        imageSize: imageData.size,
+        updatedAt: serverTimestamp()
+      });
+    }
+
+    return docRef.id;
+  } catch (error) {
+    console.error('Error adding diagram:', error);
+    throw error;
+  }
+};
+
+// Update a diagram
+export const updateDiagram = async (diagramId, updates, newImageFile) => {
+  try {
+    const diagramDoc = doc(db, 'diagrams', diagramId);
+    
+    // If there's a new image, upload it and delete the old one
+    let imageData = null;
+    if (newImageFile) {
+      // Get current diagram data to delete old image
+      const currentSnapshot = await getDocs(query(diagramsRef));
+      const currentDoc = currentSnapshot.docs.find(doc => doc.id === diagramId);
+      const currentData = currentDoc?.data();
+      
+      // Upload new image
+      imageData = await uploadDiagramImage(newImageFile, diagramId);
+      
+      // Delete old image if it exists
+      if (currentData?.imageFileName) {
+        await deleteDiagramImage(currentData.imageFileName);
+      }
+    }
+
+    // Update document
+    await updateDoc(diagramDoc, {
+      ...updates,
+      ...(imageData && {
+        imageUrl: imageData.url,
+        imageFileName: imageData.fileName,
+        imageOriginalName: imageData.originalName,
+        imageSize: imageData.size
+      }),
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error updating diagram:', error);
+    throw error;
+  }
+};
+
+// Delete a diagram
+export const deleteDiagram = async (diagramId) => {
+  try {
+    // Get diagram data to delete associated image
+    const snapshot = await getDocs(query(diagramsRef));
+    const diagramDoc = snapshot.docs.find(doc => doc.id === diagramId);
+    const diagramData = diagramDoc?.data();
+    
+    // Delete image from storage if it exists
+    if (diagramData?.imageFileName) {
+      await deleteDiagramImage(diagramData.imageFileName);
+    }
+    
+    // Delete document
+    const docRef = doc(db, 'diagrams', diagramId);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error('Error deleting diagram:', error);
+    throw error;
+  }
+};
+
+// Move diagram up in order
+export const moveDiagramUp = async (diagramId) => {
+  return await runTransaction(db, async (transaction) => {
+    const diagramDoc = doc(db, 'diagrams', diagramId);
+    const diagramSnapshot = await transaction.get(diagramDoc);
+    
+    if (!diagramSnapshot.exists()) {
+      throw new Error('Diagram does not exist');
+    }
+    
+    const currentOrder = diagramSnapshot.data().order || 0;
+    
+    // Find the diagram with the next lower order
+    const diagramsQuery = query(diagramsRef);
+    const snapshot = await getDocs(diagramsQuery);
+    
+    let targetDiagram = null;
+    let targetOrder = -1;
+    
+    snapshot.docs.forEach(doc => {
+      const order = doc.data().order || 0;
+      if (order < currentOrder && order > targetOrder) {
+        targetOrder = order;
+        targetDiagram = doc;
+      }
+    });
+    
+    if (targetDiagram) {
+      // Swap orders
+      transaction.update(diagramDoc, { 
+        order: targetOrder,
+        updatedAt: serverTimestamp()
+      });
+      transaction.update(targetDiagram.ref, { 
+        order: currentOrder,
+        updatedAt: serverTimestamp()
+      });
+    }
+  });
+};
+
+// Move diagram down in order
+export const moveDiagramDown = async (diagramId) => {
+  return await runTransaction(db, async (transaction) => {
+    const diagramDoc = doc(db, 'diagrams', diagramId);
+    const diagramSnapshot = await transaction.get(diagramDoc);
+    
+    if (!diagramSnapshot.exists()) {
+      throw new Error('Diagram does not exist');
+    }
+    
+    const currentOrder = diagramSnapshot.data().order || 0;
+    
+    // Find the diagram with the next higher order
+    const diagramsQuery = query(diagramsRef);
+    const snapshot = await getDocs(diagramsQuery);
+    
+    let targetDiagram = null;
+    let targetOrder = Infinity;
+    
+    snapshot.docs.forEach(doc => {
+      const order = doc.data().order || 0;
+      if (order > currentOrder && order < targetOrder) {
+        targetOrder = order;
+        targetDiagram = doc;
+      }
+    });
+    
+    if (targetDiagram) {
+      // Swap orders
+      transaction.update(diagramDoc, { 
+        order: targetOrder,
+        updatedAt: serverTimestamp()
+      });
+      transaction.update(targetDiagram.ref, { 
         order: currentOrder,
         updatedAt: serverTimestamp()
       });
