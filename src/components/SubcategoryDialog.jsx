@@ -117,9 +117,9 @@ const SubcategoryDialog = () => {
   return (
     <Dialog.Root open={isOpen} onOpenChange={closeSubcategoryModal}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/50 animate-in fade-in-0" />
+        <Dialog.Overlay className="subcategoryClass fixed inset-0 bg-black/50 animate-in fade-in-0" />
         <Dialog.Content 
-          className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in-0 zoom-in-95"
+          className="subcategory-dialog-content fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in-0 zoom-in-95"
           onKeyDown={handleKeyDown}
         >
           <div className="flex items-center justify-between mb-6">

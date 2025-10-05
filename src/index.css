@@ -76,3 +76,19 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* Custom dialog styling */
+.subcategory-dialog-content {
+  background-color: #dbeafe; /* Light blue background */
+  border: 2px solid #3b82f6; /* Blue border */
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  padding: 1rem;
+  
+}
+
+/* Optional: Add a subtle gradient */
+.subcategory-dialog-content {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}

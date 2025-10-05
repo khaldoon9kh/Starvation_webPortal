@@ -85,10 +85,20 @@ export const reorderCategories = async (updatesArray) => {
 export const watchSubcategories = (categoryId, callback) => {
   const q = query(
     subcategoriesRef, 
-    where('categoryId', '==', categoryId),
-    orderBy('order', 'asc')
+    where('categoryId', '==', categoryId)
   );
-  return onSnapshot(q, callback);
+  
+  return onSnapshot(q, (snapshot) => {
+    const subcategories = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    
+    // Sort by order in JavaScript to avoid composite index requirement
+    subcategories.sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    callback(subcategories);
+  });
 };
 
 export const createSubcategory = async (categoryId, subcategoryData) => {

@@ -51,11 +51,8 @@ const AdminPage = () => {
     const unsubscribes = [];
 
     categories.forEach(category => {
-      const unsubscribe = watchSubcategories(category.id, (snapshot) => {
-        const subcategoriesData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+      const unsubscribe = watchSubcategories(category.id, (subcategoriesData) => {
+        // subcategoriesData is already processed and sorted
         setSubcategories(category.id, subcategoriesData);
       });
       unsubscribes.push(unsubscribe);
@@ -69,6 +66,10 @@ const AdminPage = () => {
   const handleAddCategory = async () => {
     if (!newCategoryTitle.trim()) return;
 
+    // Debug: Check auth state
+    console.log('Current user:', auth.currentUser);
+    console.log('User ID:', auth.currentUser?.uid);
+    
     setIsAddingCategory(true);
     try {
       await createCategory({
@@ -78,7 +79,8 @@ const AdminPage = () => {
       setNewCategoryTitle('');
     } catch (error) {
       console.error('Error creating category:', error);
-      setError('Failed to create category');
+      console.error('Error details:', error.code, error.message);
+      setError('Failed to create category: ' + error.message);
     } finally {
       setIsAddingCategory(false);
     }
