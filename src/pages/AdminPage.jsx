@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, FolderOpen, BookOpen } from 'lucide-react';
 import { useContentStore } from '../store/useContentStore';
 import { 
   watchCategories, 
@@ -15,6 +15,7 @@ import CategoryRow from '../components/CategoryRow';
 import ConfirmDialog from '../components/ConfirmDialog';
 import SubcategoryDialog from '../components/SubcategoryDialog';
 import EmptyState from '../components/EmptyState';
+import Glossary from './Glossary';
 
 const AdminPage = () => {
   const {
@@ -30,6 +31,7 @@ const AdminPage = () => {
 
   const [newCategoryTitle, setNewCategoryTitle] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [activeTab, setActiveTab] = useState('content');
 
   // Watch categories
   useEffect(() => {
@@ -137,6 +139,12 @@ const AdminPage = () => {
 
   const sortedCategories = [...categories].sort((a, b) => a.order - b.order);
 
+  // Tab definitions
+  const tabs = [
+    { id: 'content', name: 'Content', icon: FolderOpen },
+    { id: 'glossary', name: 'Glossary', icon: BookOpen }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -145,11 +153,37 @@ const AdminPage = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Content Management
+            Starvation Library Admin
           </h1>
           
-          {/* Add Category Form */}
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          {/* Tab Navigation */}
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`
+                    py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors
+                    ${activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }
+                  `}
+                >
+                  <tab.icon className="w-5 h-5" />
+                  <span>{tab.name}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'content' && (
+          <div>
+            {/* Add Category Form */}
+            <div className="bg-white rounded-lg shadow p-6 mb-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">
               Add New Category
             </h2>
@@ -181,47 +215,52 @@ const AdminPage = () => {
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Categories List */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading categories...</p>
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <p className="text-red-600">{error}</p>
-          </div>
-        ) : sortedCategories.length === 0 ? (
-          <EmptyState
-            title="No categories yet"
-            description="Create your first category to get started with organizing your content."
-            action={
-              <button
-                onClick={() => document.querySelector('input[type="text"]')?.focus()}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Category
-              </button>
-            }
-          />
-        ) : (
-          <div className="space-y-4">
-            {sortedCategories.map((category, index) => (
-              <CategoryRow
-                key={category.id}
-                category={category}
-                onEdit={handleEditCategory}
-                onDelete={handleDeleteCategory}
-                onMoveUp={handleMoveCategoryUp}
-                onMoveDown={handleMoveCategoryDown}
-                canMoveUp={index > 0}
-                canMoveDown={index < sortedCategories.length - 1}
+          {/* Categories List */}
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading categories...</p>
+              </div>
+            ) : error ? (
+              <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                <p className="text-red-600">{error}</p>
+              </div>
+            ) : sortedCategories.length === 0 ? (
+              <EmptyState
+                title="No categories yet"
+                description="Create your first category to get started with organizing your content."
+                action={
+                  <button
+                    onClick={() => document.querySelector('input[type="text"]')?.focus()}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Your First Category
+                  </button>
+                }
               />
-            ))}
+            ) : (
+              <div className="space-y-4">
+                {sortedCategories.map((category, index) => (
+                  <CategoryRow
+                    key={category.id}
+                    category={category}
+                    onEdit={handleEditCategory}
+                    onDelete={handleDeleteCategory}
+                    onMoveUp={handleMoveCategoryUp}
+                    onMoveDown={handleMoveCategoryDown}
+                    canMoveUp={index > 0}
+                    canMoveDown={index < sortedCategories.length - 1}
+                  />
+                ))}
+              </div>
+            )}
           </div>
+        )}
+
+        {activeTab === 'glossary' && (
+          <Glossary />
         )}
       </div>
 

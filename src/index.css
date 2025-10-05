@@ -7,6 +7,17 @@
   background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
 }
 
+/* Glossary dialog styling - same as subcategory */
+.glossary-dialog-content {
+  background-color: #dbeafe; /* Light blue background */
+  border: 2px solid #3b82f6; /* Blue border */
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+}
+
 /* Formatted content styling */
 .formatted-content {
   line-height: 1.6;
@@ -136,6 +147,19 @@
   width: 50%;
   padding: 1rem;
   
+}
+
+.glossary-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50; /* Ensure it's above other content */
 }
 
 /* Optional: Add a subtle gradient */
