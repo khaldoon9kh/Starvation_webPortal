@@ -29,6 +29,17 @@
   background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
 }
 
+/* Template dialog styling - same as other dialogs */
+.template-dialog-content {
+  background-color: #dbeafe; /* Light blue background */
+  border: 2px solid #3b82f6; /* Blue border */
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+}
+
 /* Formatted content styling */
 .formatted-content {
   line-height: 1.6;
@@ -160,7 +171,7 @@
   
 }
 
-.glossary-dialog-backdrop, .diagram-dialog-backdrop {
+.glossary-dialog-backdrop, .diagram-dialog-backdrop, .template-dialog-backdrop {
   background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
   position: fixed;
   top: 0;

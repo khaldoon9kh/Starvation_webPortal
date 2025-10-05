@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, FolderOpen, BookOpen, Image } from 'lucide-react';
+import { Plus, FolderOpen, BookOpen, Image, FileText } from 'lucide-react';
 import { useContentStore } from '../store/useContentStore';
 import { 
   watchCategories, 
@@ -17,6 +17,7 @@ import SubcategoryDialog from '../components/SubcategoryDialog';
 import EmptyState from '../components/EmptyState';
 import Glossary from './Glossary';
 import Diagrams from './Diagrams';
+import Templates from './Templates';
 
 const AdminPage = () => {
   const {
@@ -144,7 +145,8 @@ const AdminPage = () => {
   const tabs = [
     { id: 'content', name: 'Content', icon: FolderOpen },
     { id: 'glossary', name: 'Glossary', icon: BookOpen },
-    { id: 'diagrams', name: 'Diagrams', icon: Image }
+    { id: 'diagrams', name: 'Diagrams', icon: Image },
+    { id: 'templates', name: 'Templates', icon: FileText }
   ];
 
   return (
@@ -267,6 +269,10 @@ const AdminPage = () => {
 
         {activeTab === 'diagrams' && (
           <Diagrams />
+        )}
+
+        {activeTab === 'templates' && (
+          <Templates />
         )}
       </div>
 

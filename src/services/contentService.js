@@ -26,6 +26,7 @@ const categoriesRef = collection(db, 'categories');
 const subcategoriesRef = collection(db, 'subcategories');
 const glossaryRef = collection(db, 'glossary');
 const diagramsRef = collection(db, 'diagrams');
+const templatesRef = collection(db, 'templates');
 
 // Categories operations
 export const watchCategories = (callback) => {
@@ -727,6 +728,230 @@ export const moveDiagramDown = async (diagramId) => {
         updatedAt: serverTimestamp()
       });
       transaction.update(targetDiagram.ref, { 
+        order: currentOrder,
+        updatedAt: serverTimestamp()
+      });
+    }
+  });
+};
+
+// ==================== TEMPLATES OPERATIONS ====================
+
+// Helper function to upload template PDF to Firebase Storage
+const uploadTemplatePDF = async (file, templateId) => {
+  const timestamp = Date.now();
+  const fileName = `template_${templateId}_${timestamp}.pdf`;
+  const storageRef = ref(storage, `templates/${fileName}`);
+  
+  try {
+    const snapshot = await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(snapshot.ref);
+    
+    return {
+      url,
+      fileName,
+      originalName: file.name,
+      size: file.size
+    };
+  } catch (error) {
+    console.error('Error uploading PDF:', error);
+    throw error;
+  }
+};
+
+// Helper function to delete template PDF from Firebase Storage
+const deleteTemplatePDF = async (fileName) => {
+  const storageRef = ref(storage, `templates/${fileName}`);
+  
+  try {
+    await deleteObject(storageRef);
+  } catch (error) {
+    console.error('Error deleting PDF:', error);
+    throw error;
+  }
+};
+
+// Watch templates with real-time updates
+export const watchTemplates = (callback) => {
+  const q = query(templatesRef, orderBy('order', 'asc'));
+  return onSnapshot(q, callback);
+};
+
+// Create a new template
+export const createTemplate = async (templateData, pdfFile) => {
+  try {
+    // Get the highest order value and increment by 1
+    const q = query(templatesRef, orderBy('order', 'desc'));
+    const snapshot = await getDocs(q);
+    const highestOrder = snapshot.empty ? 0 : snapshot.docs[0].data().order;
+    
+    // Create template document first to get ID
+    const docRef = await addDoc(templatesRef, {
+      title: templateData.title || '',
+      titleArabic: templateData.titleArabic || '',
+      description: templateData.description || '',
+      descriptionArabic: templateData.descriptionArabic || '',
+      category: templateData.category || '',
+      order: highestOrder + 1,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    
+    // Upload PDF file
+    const pdfData = await uploadTemplatePDF(pdfFile, docRef.id);
+    
+    // Update document with PDF information
+    await updateDoc(docRef, {
+      pdfUrl: pdfData.url,
+      pdfFileName: pdfData.fileName,
+      pdfOriginalName: pdfData.originalName,
+      pdfSize: pdfData.size,
+      updatedAt: serverTimestamp()
+    });
+    
+    return docRef;
+  } catch (error) {
+    console.error('Error creating template:', error);
+    throw error;
+  }
+};
+
+// Update an existing template
+export const updateTemplate = async (templateId, updates, newPdfFile = null) => {
+  try {
+    const templateDoc = doc(db, 'templates', templateId);
+    
+    // Handle PDF file update if provided
+    let pdfData = null;
+    if (newPdfFile) {
+      // Get current template data to delete old PDF
+      const currentSnapshot = await getDocs(query(templatesRef));
+      const currentDoc = currentSnapshot.docs.find(doc => doc.id === templateId);
+      const currentData = currentDoc?.data();
+      
+      // Upload new PDF
+      pdfData = await uploadTemplatePDF(newPdfFile, templateId);
+      
+      // Delete old PDF if it exists
+      if (currentData?.pdfFileName) {
+        await deleteTemplatePDF(currentData.pdfFileName);
+      }
+    }
+
+    // Update document
+    await updateDoc(templateDoc, {
+      ...updates,
+      ...(pdfData && {
+        pdfUrl: pdfData.url,
+        pdfFileName: pdfData.fileName,
+        pdfOriginalName: pdfData.originalName,
+        pdfSize: pdfData.size
+      }),
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error updating template:', error);
+    throw error;
+  }
+};
+
+// Delete a template
+export const deleteTemplate = async (templateId) => {
+  try {
+    // Get template data to delete associated PDF
+    const snapshot = await getDocs(query(templatesRef));
+    const templateDoc = snapshot.docs.find(doc => doc.id === templateId);
+    const templateData = templateDoc?.data();
+    
+    // Delete PDF from storage if it exists
+    if (templateData?.pdfFileName) {
+      await deleteTemplatePDF(templateData.pdfFileName);
+    }
+    
+    // Delete document
+    const docRef = doc(db, 'templates', templateId);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error('Error deleting template:', error);
+    throw error;
+  }
+};
+
+// Move template up in order
+export const moveTemplateUp = async (templateId) => {
+  return await runTransaction(db, async (transaction) => {
+    const templateDoc = doc(db, 'templates', templateId);
+    const templateSnapshot = await transaction.get(templateDoc);
+    
+    if (!templateSnapshot.exists()) {
+      throw new Error('Template does not exist');
+    }
+    
+    const currentOrder = templateSnapshot.data().order || 0;
+    
+    // Find the template with the next lower order
+    const templatesQuery = query(templatesRef);
+    const snapshot = await getDocs(templatesQuery);
+    
+    let targetTemplate = null;
+    let targetOrder = -1;
+    
+    snapshot.docs.forEach(doc => {
+      const order = doc.data().order || 0;
+      if (order < currentOrder && order > targetOrder) {
+        targetOrder = order;
+        targetTemplate = doc;
+      }
+    });
+    
+    if (targetTemplate) {
+      // Swap orders
+      transaction.update(templateDoc, { 
+        order: targetOrder,
+        updatedAt: serverTimestamp()
+      });
+      transaction.update(targetTemplate.ref, { 
+        order: currentOrder,
+        updatedAt: serverTimestamp()
+      });
+    }
+  });
+};
+
+// Move template down in order
+export const moveTemplateDown = async (templateId) => {
+  return await runTransaction(db, async (transaction) => {
+    const templateDoc = doc(db, 'templates', templateId);
+    const templateSnapshot = await transaction.get(templateDoc);
+    
+    if (!templateSnapshot.exists()) {
+      throw new Error('Template does not exist');
+    }
+    
+    const currentOrder = templateSnapshot.data().order || 0;
+    
+    // Find the template with the next higher order
+    const templatesQuery = query(templatesRef);
+    const snapshot = await getDocs(templatesQuery);
+    
+    let targetTemplate = null;
+    let targetOrder = Infinity;
+    
+    snapshot.docs.forEach(doc => {
+      const order = doc.data().order || 0;
+      if (order > currentOrder && order < targetOrder) {
+        targetOrder = order;
+        targetTemplate = doc;
+      }
+    });
+    
+    if (targetTemplate) {
+      // Swap orders
+      transaction.update(templateDoc, { 
+        order: targetOrder,
+        updatedAt: serverTimestamp()
+      });
+      transaction.update(targetTemplate.ref, { 
         order: currentOrder,
         updatedAt: serverTimestamp()
       });
