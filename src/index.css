@@ -2,51 +2,547 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles for Arabic te/* Optional: Add a subtle gradient */
+/* Design System Variables */
+:root {
+  /* Colors - Mobile App Inspired */
+  --color-primary-green: #4ade80; /* Natural green from mobile header */
+  --color-accent-green: #22c55e;
+  --color-green-hover: #16a34a;
+  --color-green-light: #dcfce7;
+  
+  /* Category stripe colors */
+  --color-law-stripe: #84cc16; /* Olive green for Law/Liability */
+  --color-framework-stripe: #3b82f6; /* Desaturated blue for ICL/IHL frameworks */
+  --color-crimes-stripe: #15803d; /* Forest green for War Crimes/Mental Elements */
+  
+  /* Neutrals */
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-border-light: #f3f4f6;
+  --color-border: #e5e7eb;
+  --color-surface: #ffffff;
+  --color-background: #fafafa;
+  
+  /* Typography */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 0.9rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.75rem;
+  --spacing-lg: 1rem;
+  --spacing-xl: 1.5rem;
+  --spacing-2xl: 2rem;
+  
+  /* Border radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Base Styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Arabic', 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+}
+
+/* Admin Layout */
+.admin-container {
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+.admin-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+}
+
+/* Sticky Navigation Tabs */
+.admin-nav-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-light);
+  padding: var(--spacing-md) 0;
+  margin-bottom: var(--spacing-xl);
+}
+
+.nav-pills-container {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.nav-pill {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: 36px;
+}
+
+.nav-pill:hover {
+  background-color: var(--color-green-light);
+}
+
+.nav-pill.active {
+  background-color: var(--color-primary-green);
+  color: white;
+}
+
+.nav-pill:focus {
+  outline: 2px solid var(--color-primary-green);
+  outline-offset: 2px;
+}
+
+/* Category Cards */
+.category-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--spacing-lg);
+  overflow: hidden;
+  position: relative;
+}
+
+.category-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--stripe-color, var(--color-law-stripe));
+}
+
+/* RTL support for category stripes */
+[dir="rtl"] .category-card::before {
+  left: auto;
+  right: 0;
+}
+
+.category-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.2s ease;
+}
+
+.category-header:hover {
+  background-color: var(--color-green-light);
+}
+
+.category-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.category-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-xs);
+}
+
+.category-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.chevron-icon {
+  transition: transform 0.2s ease;
+  color: var(--color-text-secondary);
+}
+
+.chevron-icon.expanded {
+  transform: rotate(180deg);
+}
+
+/* Subcategory Tree */
+.subcategory-tree {
+  border-top: 1px solid var(--color-border-light);
+  background-color: #fafbfc;
+}
+
+.subcategory-item {
+  position: relative;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-light);
+  background-color: var(--color-surface);
+  margin-bottom: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid transparent; /* Default border for dynamic color */
+}
+
+.subcategory-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+/* Tree indentation and guides */
+.tree-level-1 { padding-left: calc(var(--spacing-lg) + 16px); }
+.tree-level-2 { padding-left: calc(var(--spacing-lg) + 32px); }
+.tree-level-3 { padding-left: calc(var(--spacing-lg) + 48px); }
+
+[dir="rtl"] .tree-level-1 { padding-left: var(--spacing-lg); padding-right: calc(var(--spacing-lg) + 16px); }
+[dir="rtl"] .tree-level-2 { padding-left: var(--spacing-lg); padding-right: calc(var(--spacing-lg) + 32px); }
+[dir="rtl"] .tree-level-3 { padding-left: var(--spacing-lg); padding-right: calc(var(--spacing-lg) + 48px); }
+
+/* Tree bullets */
+.tree-bullet {
+  position: absolute;
+  left: var(--spacing-lg);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+[dir="rtl"] .tree-bullet {
+  left: auto;
+  right: var(--spacing-lg);
+}
+
+.tree-bullet-1 { background-color: var(--color-law-stripe); }
+.tree-bullet-2 { background-color: var(--color-framework-stripe); }
+.tree-bullet-3 { background-color: var(--color-crimes-stripe); }
+
+/* Action Buttons */
+.action-btn {
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  background-color: var(--color-green-light);
+  color: var(--color-accent-green);
+}
+
+.action-btn:focus {
+  outline: 2px solid var(--color-primary-green);
+  outline-offset: 2px;
+}
+
+.action-btn.danger:hover {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* Forms and Inputs */
+.form-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  background-color: var(--color-surface);
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary-green);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+}
+
+/* Primary Button */
+.btn-primary {
+  background-color: var(--color-primary-green);
+  color: white;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: 36px;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-green-hover);
+}
+
+.btn-primary:focus {
+  outline: 2px solid var(--color-primary-green);
+  outline-offset: 2px;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dialog Styles */
+.dialog-content {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--spacing-xl);
+  max-width: 600px;
+  width: 90vw;
+  z-index: 50; /* Above navigation (z-index: 40) */
+}
+
+/* Radix UI Dialog Overlay */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+/* Subcategory Dialog Specific Styles */
 .subcategory-dialog-content {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
-}
-
-/* Glossary dialog styling - same as subcategory */
-.glossary-dialog-content {
-  background-color: #dbeafe; /* Light blue background */
-  border: 2px solid #3b82f6; /* Blue border */
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  z-index: 50 !important;
+  position: fixed !important;
+  width: 90vw !important;
   display: flex;
   flex-direction: column;
-  width: 50%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  max-width: 600px;
+  padding: var(--spacing-xl) !important;
 }
 
-/* Diagram dialog styling - same as subcategory and glossary */
-.diagram-dialog-content {
-  background-color: #dbeafe; /* Light blue background */
-  border: 2px solid #3b82f6; /* Blue border */
+/* Dialog Overlay */
+.subcategoryClass {
+  z-index: 45 !important;
+}
+
+/* Template Dialog Styles */
+.template-dialog-backdrop {
+  z-index: 45 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
-  flex-direction: column;
-  width: 50%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Template dialog styling - same as other dialogs */
 .template-dialog-content {
-  background-color: #dbeafe; /* Light blue background */
-  border: 2px solid #3b82f6; /* Blue border */
-  display: flex;
-  flex-direction: column;
-  width: 50%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  z-index: 50 !important;
+  position: relative !important;
+  width: 90vw !important;
+  max-width: 600px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  padding: var(--spacing-xl) !important;
 }
 
-/* Formatted content styling */
+/* Glossary Dialog Styles */
+.glossary-dialog-backdrop {
+  z-index: 45 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glossary-dialog-content {
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  z-index: 50 !important;
+  position: relative !important;
+  width: 90vw !important;
+  max-width: 600px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  padding: var(--spacing-xl) !important;
+}
+
+/* Diagram Dialog Styles */
+.diagram-dialog-backdrop {
+  z-index: 45 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diagram-dialog-content {
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  z-index: 50 !important;
+  position: relative !important;
+  width: 90vw !important;
+  max-width: 800px !important; /* Slightly larger for diagrams */
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  padding: var(--spacing-xl) !important;
+}
+
+/* Dialog Form Elements - Apply to all dialogs */
+.template-dialog-content .form-input,
+.glossary-dialog-content .form-input,
+.diagram-dialog-content .form-input,
+.subcategory-dialog-content .form-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  background-color: var(--color-surface);
+  transition: border-color 0.2s ease;
+}
+
+.template-dialog-content .form-input:focus,
+.glossary-dialog-content .form-input:focus,
+.diagram-dialog-content .form-input:focus,
+.subcategory-dialog-content .form-input:focus {
+  outline: none;
+  border-color: var(--color-primary-green);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+}
+
+/* Dialog Buttons */
+.template-dialog-content .btn-primary,
+.glossary-dialog-content .btn-primary,
+.diagram-dialog-content .btn-primary,
+.subcategory-dialog-content .btn-primary {
+  background-color: var(--color-primary-green);
+  color: white;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: 36px;
+}
+
+.template-dialog-content .btn-primary:hover,
+.glossary-dialog-content .btn-primary:hover,
+.diagram-dialog-content .btn-primary:hover,
+.subcategory-dialog-content .btn-primary:hover {
+  background-color: var(--color-green-hover);
+}
+
+.template-dialog-content .btn-primary:focus,
+.glossary-dialog-content .btn-primary:focus,
+.diagram-dialog-content .btn-primary:focus,
+.subcategory-dialog-content .btn-primary:focus {
+  outline: 2px solid var(--color-primary-green);
+  outline-offset: 2px;
+}
+
+.template-dialog-content .btn-primary:disabled,
+.glossary-dialog-content .btn-primary:disabled,
+.diagram-dialog-content .btn-primary:disabled,
+.subcategory-dialog-content .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Formatted Content */
 .formatted-content {
   line-height: 1.6;
 }
 
 .formatted-content p {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.formatted-content strong {
+  font-weight: 600;
+}
+
+.formatted-content em {
+  font-style: italic;
+}
+
+/* Loading and Empty States */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-top: 2px solid var(--color-primary-green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Arabic/RTL Improvements */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .nav-pills-container {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .category-actions {
+  flex-direction: row-reverse;
 }
 
 .formatted-content p:last-child {
@@ -160,31 +656,185 @@
   background: #a8a8a8;
 }
 
-/* Custom dialog styling */
-.subcategory-dialog-content {
-  background-color: #dbeafe; /* Light blue background */
-  border: 2px solid #3b82f6; /* Blue border */
-  display: flex;
-  flex-direction: column;
-  width: 50%;
-  padding: 1rem;
-  
+/* Legacy dialog styles removed - using new design system */
+
+/* Glossary-specific styles */
+.glossary-card {
+  position: relative;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
+  overflow: hidden;
 }
 
-.glossary-dialog-backdrop, .diagram-dialog-backdrop, .template-dialog-backdrop {
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-  position: fixed;
-  top: 0;
+.glossary-card:hover {
+  box-shadow: var(--shadow-card);
+}
+
+.glossary-card::before {
+  content: '';
+  position: absolute;
   left: 0;
-  right: 0;
+  top: 0;
   bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50; /* Ensure it's above other content */
+  width: 4px;
+  background: #3b82f6; /* Blue highlight for glossary */
 }
 
-/* Optional: Add a subtle gradient */
-.subcategory-dialog-content {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+/* RTL support for glossary cards */
+[dir="rtl"] .glossary-card::before {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .glossary-card-content {
+  padding-left: var(--spacing-xl);
+  padding-right: 2rem;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 1024px) {
+  .glossary-definitions {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+}
+
+/* Diagram-specific styles */
+.diagram-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.diagram-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--color-primary-green); /* Green highlight for diagrams */
+}
+
+.diagram-thumbnail {
+  padding: var(--spacing-lg);
+  padding-right: 0;
+  width: 10%;
+}
+
+.diagram-details {
+  min-width: 0; /* Allow flex item to shrink */
+}
+
+/* RTL support for diagram cards */
+[dir="rtl"] .diagram-card::before {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .diagram-card .flex {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .diagram-thumbnail {
+  padding-left: 0;
+  padding-right: var(--spacing-lg);
+}
+
+/* Mobile responsive for diagram cards */
+@media (max-width: 640px) {
+  .diagram-card .flex {
+    flex-direction: column;
+  }
+  
+  .diagram-thumbnail {
+    padding: var(--spacing-lg);
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .diagram-thumbnail .relative {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  
+  [dir="rtl"] .diagram-card .flex {
+    flex-direction: column;
+  }
+  
+  [dir="rtl"] .diagram-thumbnail {
+    padding: var(--spacing-lg);
+    padding-bottom: 0;
+  }
+}
+
+/* Template-specific styles */
+.template-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.template-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #ea580c; /* Orange highlight for templates */
+}
+
+.template-thumbnail {
+  padding: var(--spacing-lg);
+  padding-right: 0;
+}
+
+.template-details {
+  min-width: 0; /* Allow flex item to shrink */
+}
+
+/* RTL support for template cards */
+[dir="rtl"] .template-card::before {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .template-card .flex {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .template-thumbnail {
+  padding-left: 0;
+  padding-right: var(--spacing-lg);
+}
+
+/* Mobile responsive for template cards */
+@media (max-width: 640px) {
+  .template-card .flex {
+    flex-direction: column;
+  }
+  
+  .template-thumbnail {
+    padding: var(--spacing-lg);
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .template-thumbnail .relative {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  
+  [dir="rtl"] .template-card .flex {
+    flex-direction: column;
+  }
+  
+  [dir="rtl"] .template-thumbnail {
+    padding: var(--spacing-lg);
+    padding-bottom: 0;
+  }
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Trash2, Tag, ChevronUp, ChevronDown, Eye, Download, X } from 'lucide-react';
+import { Edit2, Trash2, Tag, ChevronUp, ChevronDown, Eye, Download, X, Image as ImageIcon } from 'lucide-react';
 import useDiagramsStore from '../stores/diagramsStore';
 import FormattedContent from './FormattedContent';
 
@@ -42,148 +42,138 @@ const DiagramRow = ({ diagram, onEdit, canMoveUp, canMoveDown, onMoveUp, onMoveD
 
   return (
     <>
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-        {/* Image Section */}
-        {diagram.imageUrl && (
-          <div className="relative">
-            <img 
-              src={diagram.imageUrl} 
-              alt={diagram.title}
-              className="w-full h-48 object-cover cursor-pointer hover:opacity-95 transition-opacity"
-              onClick={() => setShowFullImage(true)}
-            />
-            <div className="absolute top-2 right-2 flex space-x-1">
-              <button
-                onClick={() => setShowFullImage(true)}
-                className="p-2 bg-black bg-opacity-50 text-white rounded-lg hover:bg-opacity-70 transition-colors"
-                title="View full image"
-              >
-                <Eye className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleImageDownload}
-                className="p-2 bg-black bg-opacity-50 text-white rounded-lg hover:bg-opacity-70 transition-colors"
-                title="Download image"
-              >
-                <Download className="w-4 h-4" />
-              </button>
-            </div>
-            {diagram.imageSize && (
-              <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
-                {formatFileSize(diagram.imageSize)}
+      <div className="diagram-card bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all hover:bg-green-50 overflow-hidden">
+        <div className="flex">
+          {/* Thumbnail Section */}
+          <div className="diagram-thumbnail flex-shrink-0">
+            {diagram.imageUrl ? (
+              <div className="relative w-24 h-24 sm:w-32 sm:h-32">
+                <img 
+                  src={diagram.imageUrl} 
+                  alt={diagram.title}
+                  className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform rounded-md"
+                  onClick={() => setShowFullImage(true)}
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-colors rounded-md"></div>
+              </div>
+            ) : (
+              <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-100 rounded-md flex items-center justify-center">
+                <ImageIcon className="w-8 h-8 text-gray-400" />
               </div>
             )}
           </div>
-        )}
 
-        {/* Content Section */}
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <div className="flex items-center space-x-3 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {diagram.title}
-                </h3>
-                {diagram.order && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                    #{diagram.order}
-                  </span>
-                )}
-                {diagram.category && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    <Tag className="w-3 h-3 mr-1" />
-                    {diagram.category}
-                  </span>
-                )}
+          {/* Details Section */}
+          <div className="flex-1 p-4 diagram-details">
+            {/* Header Row with Actions */}
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1 min-w-0">
+                {/* Titles Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-2">
+                  {/* English Title */}
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-lg font-semibold text-gray-900 truncate">
+                      {diagram.title}
+                    </h3>
+                    {diagram.category && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200 flex-shrink-0">
+                        <Tag className="w-3 h-3 mr-1" />
+                        {diagram.category}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Arabic Title */}
+                  {diagram.titleArabic && (
+                    <div className="lg:text-right" dir="rtl">
+                      <h4 className="text-lg font-medium text-gray-700 truncate">
+                        {diagram.titleArabic}
+                      </h4>
+                    </div>
+                  )}
+                </div>
               </div>
-              {diagram.titleArabic && (
-                <h4 className="text-lg font-medium text-gray-700 mb-3" dir="rtl">
-                  {diagram.titleArabic}
-                </h4>
+              
+              {/* Compact Action Icons */}
+              <div className="flex items-center space-x-1 flex-shrink-0">
+                {/* Move Up Button */}
+                <button
+                  onClick={() => onMoveUp(diagram.id)}
+                  disabled={!canMoveUp}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
+                  title="Move up"
+                  aria-label="Move diagram up"
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </button>
+                
+                {/* Move Down Button */}
+                <button
+                  onClick={() => onMoveDown(diagram.id)}
+                  disabled={!canMoveDown}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
+                  title="Move down"
+                  aria-label="Move diagram down"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                
+                {/* Edit Button */}
+                <button
+                  onClick={() => onEdit(diagram)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
+                  title="Edit diagram"
+                  aria-label="Edit diagram"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                
+                {/* Delete Button */}
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
+                  title="Delete diagram"
+                  aria-label="Delete diagram"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Descriptions - Responsive Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* English Description Panel */}
+              <div className="space-y-1">
+                <h5 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Description</h5>
+                <div className="text-gray-800 leading-relaxed text-sm">
+                  <FormattedContent content={diagram.description} />
+                </div>
+              </div>
+
+              {/* Arabic Description Panel */}
+              {diagram.descriptionArabic && (
+                <div className="space-y-1" dir="rtl">
+                  <h5 className="text-sm font-medium text-gray-500 uppercase tracking-wide">الوصف</h5>
+                  <div className="text-gray-800 leading-relaxed text-sm">
+                    <FormattedContent content={diagram.descriptionArabic} />
+                  </div>
+                </div>
               )}
             </div>
-            
-            {/* Actions */}
-            <div className="flex items-center space-x-2">
-              {/* Move Up Button */}
-              <button
-                onClick={() => onMoveUp(diagram.id)}
-                disabled={!canMoveUp}
-                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Move up"
-              >
-                <ChevronUp className="w-4 h-4" />
-              </button>
-              
-              {/* Move Down Button */}
-              <button
-                onClick={() => onMoveDown(diagram.id)}
-                disabled={!canMoveDown}
-                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                title="Move down"
-              >
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              
-              {/* Edit Button */}
-              <button
-                onClick={() => onEdit(diagram)}
-                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                title="Edit diagram"
-              >
-                <Edit2 className="w-4 h-4" />
-              </button>
-              
-              {/* Delete Button */}
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                title="Delete diagram"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
 
-          {/* Descriptions */}
-          <div className="space-y-4">
-            {/* English Description */}
-            <div>
-              <h5 className="text-sm font-medium text-gray-600 mb-2">Description</h5>
-              <div className="text-gray-800">
-                <FormattedContent content={diagram.description} />
-              </div>
-            </div>
-
-            {/* Arabic Description */}
-            {diagram.descriptionArabic && (
-              <div>
-                <h5 className="text-sm font-medium text-gray-600 mb-2">الوصف</h5>
-                <div className="text-gray-800" dir="rtl">
-                  <FormattedContent content={diagram.descriptionArabic} />
+            {/* Metadata Footer */}
+            {(diagram.createdAt || diagram.updatedAt) && (
+              <div className="mt-4 pt-3 border-t border-gray-100">
+                <div className="flex justify-end text-xs text-gray-500">
+                  {diagram.updatedAt && diagram.updatedAt.seconds !== diagram.createdAt?.seconds ? (
+                    <span>Updated: {new Date(diagram.updatedAt.seconds * 1000).toLocaleDateString()}</span>
+                  ) : diagram.createdAt ? (
+                    <span>Created: {new Date(diagram.createdAt.seconds * 1000).toLocaleDateString()}</span>
+                  ) : null}
                 </div>
               </div>
             )}
           </div>
-
-          {/* Metadata */}
-          {(diagram.createdAt || diagram.updatedAt) && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex justify-between text-xs text-gray-500">
-                {diagram.createdAt && (
-                  <span>
-                    Created: {new Date(diagram.createdAt.seconds * 1000).toLocaleDateString()}
-                  </span>
-                )}
-                {diagram.updatedAt && diagram.updatedAt.seconds !== diagram.createdAt?.seconds && (
-                  <span>
-                    Updated: {new Date(diagram.updatedAt.seconds * 1000).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -224,14 +214,14 @@ const DiagramRow = ({ diagram, onEdit, canMoveUp, canMoveDown, onMoveUp, onMoveD
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeleting}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center space-x-2 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               >
                 {isDeleting ? (
                   <>

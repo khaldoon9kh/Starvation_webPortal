@@ -151,102 +151,111 @@ const AdminPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="admin-container">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Starvation Library Admin
-          </h1>
-          
-          {/* Tab Navigation */}
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`
-                    py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors
-                    ${activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }
-                  `}
-                >
-                  <tab.icon className="w-5 h-5" />
-                  <span>{tab.name}</span>
-                </button>
-              ))}
-            </nav>
+      {/* Sticky Navigation Tabs */}
+      <div className="admin-nav-tabs">
+        <div className="admin-content">
+          <div className="nav-pills-container">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`nav-pill ${activeTab === tab.id ? 'active' : ''}`}
+              >
+                <tab.icon className="w-4 h-4" />
+                <span>{tab.name}</span>
+              </button>
+            ))}
+            
+            {/* Search Action - Right Aligned */}
+            <div className="ml-auto">
+              <button className="action-btn">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
+      </div>
+      
+      <div className="admin-content">
 
         {/* Tab Content */}
         {activeTab === 'content' && (
           <div>
             {/* Add Category Form */}
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              Add New Category
-            </h2>
-            <div className="flex gap-3">
-              <input
-                type="text"
-                placeholder="Category title (English)"
-                value={newCategoryTitle}
-                onChange={(e) => setNewCategoryTitle(e.target.value)}
-                onKeyDown={handleKeyPress}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-              <button
-                onClick={handleAddCategory}
-                disabled={isAddingCategory || !newCategoryTitle.trim()}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isAddingCategory ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Adding...
-                  </div>
-                ) : (
-                  <>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Category
-                  </>
-                )}
-              </button>
+            <div className="category-card" style={{'--stripe-color': 'var(--color-primary-green)'}}>
+              <div className="category-header">
+                <h2 className="category-title">Add New Category</h2>
+              </div>
+              <div style={{padding: 'var(--spacing-lg)'}}>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    placeholder="Category title (English)"
+                    value={newCategoryTitle}
+                    onChange={(e) => setNewCategoryTitle(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    className="form-input flex-1"
+                  />
+                  <button
+                    onClick={handleAddCategory}
+                    disabled={isAddingCategory || !newCategoryTitle.trim()}
+                    className="btn-primary"
+                  >
+                    {isAddingCategory ? (
+                      <>
+                        <div className="loading-spinner"></div>
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4" />
+                        Add Category
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Categories List */}
+            {/* Categories List */}
             {loading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Loading categories...</p>
+              <div className="category-card">
+                <div className="category-header">
+                  <div className="flex items-center gap-3">
+                    <div className="loading-spinner"></div>
+                    <span>Loading categories...</span>
+                  </div>
+                </div>
               </div>
             ) : error ? (
-              <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                <p className="text-red-600">{error}</p>
+              <div className="category-card" style={{'--stripe-color': '#dc2626'}}>
+                <div className="category-header">
+                  <span style={{color: '#dc2626'}}>{error}</span>
+                </div>
               </div>
             ) : sortedCategories.length === 0 ? (
-              <EmptyState
-                title="No categories yet"
-                description="Create your first category to get started with organizing your content."
-                action={
+              <div className="category-card">
+                <div className="category-header">
+                  <div>
+                    <div className="category-title">No categories yet</div>
+                    <div className="category-meta">Create your first category to get started with organizing your content.</div>
+                  </div>
                   <button
                     onClick={() => document.querySelector('input[type="text"]')?.focus()}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="btn-primary"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-4 w-4" />
                     Add Your First Category
                   </button>
-                }
-              />
+                </div>
+              </div>
             ) : (
-              <div className="space-y-4">
+              <div style={{display: 'flex', flexDirection: 'column', gap: 'var(--spacing-lg)'}}>
                 {sortedCategories.map((category, index) => (
                   <CategoryRow
                     key={category.id}
@@ -275,10 +284,12 @@ const AdminPage = () => {
         {activeTab === 'templates' && (
           <Templates />
         )}
+
+        <ConfirmDialog />
+        <SubcategoryDialog />
       </div>
 
-      <ConfirmDialog />
-      <SubcategoryDialog />
+      
     </div>
   );
 };

@@ -26,6 +26,21 @@ const CategoryRow = ({ category, onEdit, onDelete, onMoveUp, onMoveDown, canMove
   const isExpanded = expandedCategories[category.id];
   const categorySubcategories = subcategories[category.id] || [];
 
+  // Map category types to stripe colors based on mobile app
+  const getCategoryStripeColor = (titleEn) => {
+    const title = titleEn.toLowerCase();
+    if (title.includes('law') || title.includes('liability') || title.includes('command')) {
+      return 'var(--color-law-stripe)'; // Olive green
+    }
+    if (title.includes('icl') || title.includes('ihl') || title.includes('ihrl') || title.includes('framework')) {
+      return 'var(--color-framework-stripe)'; // Blue
+    }
+    if (title.includes('war crimes') || title.includes('mental') || title.includes('elements')) {
+      return 'var(--color-crimes-stripe)'; // Forest green
+    }
+    return 'var(--color-law-stripe)'; // Default to olive green
+  };
+
   const handleToggleExpansion = () => {
     toggleCategoryExpansion(category.id);
   };
@@ -61,140 +76,166 @@ const CategoryRow = ({ category, onEdit, onDelete, onMoveUp, onMoveDown, canMove
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg bg-white shadow-sm">
+    <div className="category-card" style={{'--stripe-color': getCategoryStripeColor(category.titleEn)}}>
       {/* Category Header */}
-      <div className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center flex-1">
-            <button
-              onClick={handleToggleExpansion}
-              className="p-1 hover:bg-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label={isExpanded ? 'Collapse category' : 'Expand category'}
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-4 w-4 text-gray-500" />
-              ) : (
-                <ChevronRight className="h-4 w-4 text-gray-500" />
+      <div 
+        className="category-header"
+        onClick={handleToggleExpansion}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleToggleExpansion();
+          }
+        }}
+        aria-expanded={isExpanded}
+        aria-controls={`category-${category.id}-content`}
+      >
+        <div className="flex-1">
+          {isEditingInline ? (
+            <input
+              type="text"
+              value={editingTitle}
+              onChange={(e) => setEditingTitle(e.target.value)}
+              onBlur={handleSaveInlineEdit}
+              onKeyDown={handleKeyPress}
+              onClick={(e) => e.stopPropagation()}
+              className="form-input"
+              autoFocus
+            />
+          ) : (
+            <div>
+              <h3 className="category-title">
+                {category.titleEn}
+              </h3>
+              {category.titleAr && (
+                <p className="category-meta rtl" dir="rtl">
+                  {category.titleAr}
+                </p>
               )}
-            </button>
-            
-            {isEditingInline ? (
-              <input
-                type="text"
-                value={editingTitle}
-                onChange={(e) => setEditingTitle(e.target.value)}
-                onBlur={handleSaveInlineEdit}
-                onKeyDown={handleKeyPress}
-                className="ml-3 flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                autoFocus
-              />
-            ) : (
-              <div className="ml-3 flex-1">
-                <h3 className="text-lg font-medium text-gray-900">
-                  {category.titleEn}
-                </h3>
-                {category.titleAr && (
-                  <p className="text-sm text-gray-600 mt-1 rtl" dir="rtl">
-                    {category.titleAr}
-                  </p>
-                )}
-                <div className="text-xs text-gray-500 mt-1">
-                  {categorySubcategories.length} subcategories
-                </div>
+              <div className="category-meta">
+                {categorySubcategories.length} subcategories
               </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="category-actions">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleInlineEdit();
+            }}
+            className="action-btn"
+            title="Edit category"
+          >
+            <Edit2 className="h-4 w-4" />
+          </button>
           
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={handleInlineEdit}
-              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              title="Edit category"
-            >
-              <Edit2 className="h-4 w-4" />
-            </button>
-            
-            <button
-              onClick={() => onDelete(category.id, category.titleEn)}
-              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
-              title="Delete category"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-            
-            <button
-              onClick={() => onMoveUp(category.id, category.order)}
-              disabled={!canMoveUp}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Move up"
-            >
-              <ChevronUp className="h-4 w-4" />
-            </button>
-            
-            <button
-              onClick={() => onMoveDown(category.id, category.order)}
-              disabled={!canMoveDown}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Move down"
-            >
-              <ArrowDown className="h-4 w-4" />
-            </button>
-            
-            <button
-              onClick={handleAddSubcategory}
-              className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-              title="Add subcategory"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(category.id, category.titleEn);
+            }}
+            className="action-btn danger"
+            title="Delete category"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onMoveUp(category.id, category.order);
+            }}
+            disabled={!canMoveUp}
+            className="action-btn"
+            title="Move up"
+          >
+            <ChevronUp className="h-4 w-4" />
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onMoveDown(category.id, category.order);
+            }}
+            disabled={!canMoveDown}
+            className="action-btn"
+            title="Move down"
+          >
+            <ArrowDown className="h-4 w-4" />
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddSubcategory();
+            }}
+            className="action-btn"
+            style={{color: 'var(--color-accent-green)'}}
+            title="Add subcategory"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+          
+          <ChevronDown 
+            className={`chevron-icon ${isExpanded ? 'expanded' : ''}`}
+          />
         </div>
       </div>
 
       {/* Subcategories Section */}
       {isExpanded && (
-        <div className="border-t border-gray-200 bg-gray-50">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-medium text-gray-700">Subcategories</h4>
-              <button
-                onClick={handleAddSubcategory}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-700 bg-green-100 border border-green-300 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Subcategory
-              </button>
-            </div>
-            
-            {categorySubcategories.length === 0 ? (
-              <EmptyState
-                title="No subcategories"
-                description="Add your first subcategory to get started."
-                action={
-                  <button
-                    onClick={handleAddSubcategory}
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Subcategory
-                  </button>
-                }
-              />
-            ) : (
-              <div className="space-y-2">
-                {categorySubcategories.map((subcategory, index) => (
-                  <SubcategoryRow
-                    key={subcategory.id}
-                    subcategory={subcategory}
-                    categoryId={category.id}
-                    subcategories={categorySubcategories}
-                    canMoveUp={index > 0}
-                    canMoveDown={index < categorySubcategories.length - 1}
-                  />
-                ))}
-              </div>
-            )}
+        <div 
+          className="subcategory-tree" 
+          id={`category-${category.id}-content`}
+          style={{padding: 'var(--spacing-lg)'}}
+        >
+          <div className="flex items-center justify-between" style={{marginBottom: 'var(--spacing-md)'}}>
+            <h4 style={{fontSize: 'var(--font-size-sm)', fontWeight: '600', color: 'var(--color-text-secondary)'}}>
+              Subcategories
+            </h4>
+            <button
+              onClick={handleAddSubcategory}
+              className="btn-primary"
+              style={{fontSize: 'var(--font-size-xs)', padding: 'var(--spacing-xs) var(--spacing-sm)'}}
+            >
+              <Plus className="h-3 w-3" />
+              Add Subcategory
+            </button>
           </div>
+          
+          {categorySubcategories.length === 0 ? (
+            <div className="subcategory-item">
+              <div style={{textAlign: 'center', padding: 'var(--spacing-lg)'}}>
+                <p style={{color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--spacing-md)'}}>
+                  No subcategories yet
+                </p>
+                <button
+                  onClick={handleAddSubcategory}
+                  className="btn-primary"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Your First Subcategory
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)'}}>
+              {categorySubcategories.map((subcategory, index) => (
+                <SubcategoryRow
+                  key={subcategory.id}
+                  subcategory={subcategory}
+                  categoryId={category.id}
+                  subcategories={categorySubcategories}
+                  canMoveUp={index > 0}
+                  canMoveDown={index < categorySubcategories.length - 1}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

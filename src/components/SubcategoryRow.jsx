@@ -69,46 +69,44 @@ const SubcategoryRow = ({ subcategory, categoryId, canMoveUp, canMoveDown, subca
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
-      <div className="p-4">
+    <>
+      <div
+        className="subcategory-item tree-level-1"
+        style={{ borderLeftColor: subcategory.colorHex || '#000', borderLeftWidth: '4px', borderLeftStyle: 'solid' }}
+      >
+        {/* Tree bullet for level 1 */}
+        <div className="tree-bullet tree-bullet-1"></div>
+        
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center" style={{gap: 'var(--spacing-sm)'}}>
               {/* Expansion toggle for sub-sub categories */}
-              {hasSubSubCategories ? (
+              {hasSubSubCategories && (
                 <button
                   onClick={handleToggleExpansion}
-                  className="p-1 hover:bg-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="action-btn"
+                  style={{minWidth: '24px', minHeight: '24px', padding: 'var(--spacing-xs)'}}
                   aria-label={isExpanded ? 'Collapse sub-sub categories' : 'Expand sub-sub categories'}
                 >
                   {isExpanded ? (
-                    <ChevronDownExpand className="h-4 w-4 text-gray-500" />
+                    <ChevronDownExpand className="h-3 w-3" />
                   ) : (
-                    <ChevronRight className="h-4 w-4 text-gray-500" />
+                    <ChevronRight className="h-3 w-3" />
                   )}
                 </button>
-              ) : (
-                <div className="w-6" /> // Spacer for alignment
               )}
               
-              {/* Color indicator */}
-              <div 
-                className="w-4 h-4 rounded-full border border-gray-300"
-                style={{ backgroundColor: subcategory.colorHex }}
-                title={subcategory.colorHex}
-              />
-              
               <div className="flex-1">
-                <h4 className="text-base font-medium text-gray-900">
+                <h4 style={{fontSize: 'var(--font-size-base)', fontWeight: '500', color: 'var(--color-text-primary)', margin: '0'}}>
                   {subcategory.titleEn}
                   {hasSubSubCategories && (
-                    <span className="ml-2 text-xs text-gray-500">
+                    <span style={{marginLeft: 'var(--spacing-sm)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)'}}>
                       ({subcategory.subSubCategories.length} sub-items)
                     </span>
                   )}
                 </h4>
                 {subcategory.titleAr && (
-                  <p className="text-sm text-gray-600 mt-1 rtl" dir="rtl">
+                  <p className="rtl" dir="rtl" style={{fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', margin: 'var(--spacing-xs) 0 0 0'}}>
                     {subcategory.titleAr}
                   </p>
                 )}
@@ -117,26 +115,26 @@ const SubcategoryRow = ({ subcategory, categoryId, canMoveUp, canMoveDown, subca
             
             {/* Content preview - only show if has content */}
             {hasContent && (
-              <div className="mt-2 space-y-1">
+              <div style={{marginTop: 'var(--spacing-sm)'}}>
                 {subcategory.contentEn && (
-                  <div className="text-sm text-gray-700">
+                  <div style={{fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--spacing-xs)'}}>
                     <FormattedContent 
-                      content={subcategory.contentEn.length > 150 
-                        ? subcategory.contentEn.substring(0, 150) + '...'
+                      content={subcategory.contentEn.length > 120 
+                        ? subcategory.contentEn.substring(0, 120) + '...'
                         : subcategory.contentEn
                       }
-                      className="line-clamp-3"
+                      className="formatted-content"
                     />
                   </div>
                 )}
                 {subcategory.contentAr && (
-                  <div className="text-sm text-gray-700 rtl" dir="rtl">
+                  <div className="rtl" dir="rtl" style={{fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)'}}>
                     <FormattedContent 
-                      content={subcategory.contentAr.length > 150 
-                        ? subcategory.contentAr.substring(0, 150) + '...'
+                      content={subcategory.contentAr.length > 120 
+                        ? subcategory.contentAr.substring(0, 120) + '...'
                         : subcategory.contentAr
                       }
-                      className="line-clamp-3"
+                      className="formatted-content"
                     />
                   </div>
                 )}
@@ -145,10 +143,10 @@ const SubcategoryRow = ({ subcategory, categoryId, canMoveUp, canMoveDown, subca
           </div>
         
           {/* Action buttons */}
-          <div className="flex items-center space-x-1 ml-4">
+          <div className="flex items-center" style={{gap: 'var(--spacing-xs)', marginLeft: 'var(--spacing-md)'}}>
             <button
               onClick={handleEdit}
-              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="action-btn"
               title="Edit subcategory"
             >
               <Edit2 className="h-4 w-4" />
@@ -156,7 +154,7 @@ const SubcategoryRow = ({ subcategory, categoryId, canMoveUp, canMoveDown, subca
             
             <button
               onClick={handleDelete}
-              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="action-btn danger"
               title="Delete subcategory"
             >
               <Trash2 className="h-4 w-4" />
@@ -165,7 +163,7 @@ const SubcategoryRow = ({ subcategory, categoryId, canMoveUp, canMoveDown, subca
             <button
               onClick={handleMoveUp}
               disabled={!canMoveUp}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="action-btn"
               title="Move up"
             >
               <ChevronUp className="h-4 w-4" />
@@ -174,7 +172,7 @@ const SubcategoryRow = ({ subcategory, categoryId, canMoveUp, canMoveDown, subca
             <button
               onClick={handleMoveDown}
               disabled={!canMoveDown}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="action-btn"
               title="Move down"
             >
               <ChevronDown className="h-4 w-4" />
@@ -182,7 +180,8 @@ const SubcategoryRow = ({ subcategory, categoryId, canMoveUp, canMoveDown, subca
             
             <button
               onClick={handleAddSubSubcategory}
-              className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="action-btn"
+              style={{color: 'var(--color-accent-green)'}}
               title="Add sub-sub category"
             >
               <Plus className="h-4 w-4" />
@@ -191,54 +190,44 @@ const SubcategoryRow = ({ subcategory, categoryId, canMoveUp, canMoveDown, subca
         </div>
       </div>
 
+      
       {/* Sub-Sub Categories Section */}
       {hasSubSubCategories && isExpanded && (
-        <div className="border-t border-gray-200 bg-gray-50">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h5 className="text-sm font-medium text-gray-700">Sub-Sub Categories</h5>
-              <button
-                onClick={handleAddSubSubcategory}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-700 bg-green-100 border border-green-300 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Sub-Sub Category
-              </button>
-            </div>
-            
-            {subcategory.subSubCategories.length === 0 ? (
-              <EmptyState
-                title="No sub-sub categories"
-                description="Add your first sub-sub category to get started."
-                action={
-                  <button
-                    onClick={handleAddSubSubcategory}
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Sub-Sub Category
-                  </button>
-                }
-              />
-            ) : (
-              <div className="space-y-2">
-                {subcategory.subSubCategories.map((subSubcategory, index) => (
-                  <SubSubcategoryRow
-                    key={subSubcategory.id}
-                    subSubcategory={subSubcategory}
-                    categoryId={categoryId}
-                    parentSubcategoryId={subcategory.id}
-                    canMoveUp={index > 0}
-                    canMoveDown={index < subcategory.subSubCategories.length - 1}
-                    subSubcategories={subcategory.subSubCategories}
-                  />
-                ))}
+        <div style={{marginTop: 'var(--spacing-xs)'}}>
+          {subcategory.subSubCategories.length === 0 ? (
+            <div className="subcategory-item tree-level-2">
+              <div className="tree-bullet tree-bullet-2"></div>
+              <div style={{textAlign: 'center', padding: 'var(--spacing-md)'}}>
+                <p style={{color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--spacing-sm)'}}>
+                  No sub-sub categories yet
+                </p>
+                <button
+                  onClick={handleAddSubSubcategory}
+                  className="btn-primary"
+                >
+                  <Plus className="h-3 w-3" />
+                  Add Sub-Sub Category
+                </button>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div style={{display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)'}}>
+              {subcategory.subSubCategories.map((subSubcategory, index) => (
+                <SubSubcategoryRow
+                  key={subSubcategory.id}
+                  subSubcategory={subSubcategory}
+                  categoryId={categoryId}
+                  parentSubcategoryId={subcategory.id}
+                  canMoveUp={index > 0}
+                  canMoveDown={index < subcategory.subSubCategories.length - 1}
+                  subSubcategories={subcategory.subSubCategories}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </>
   );
 };
 

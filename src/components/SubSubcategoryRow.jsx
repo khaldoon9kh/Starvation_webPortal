@@ -52,50 +52,44 @@ const SubSubcategoryRow = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-3 ml-8">
+    <div className="subcategory-item tree-level-2">
+      {/* Tree bullet for level 2 */}
+      <div className="tree-bullet tree-bullet-2"></div>
+      
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <div className="flex items-center space-x-3">
-            {/* Color indicator */}
-            <div 
-              className="w-3 h-3 rounded-full border border-gray-300"
-              style={{ backgroundColor: subSubcategory.colorHex }}
-              title={subSubcategory.colorHex}
-            />
-            
-            <div className="flex-1">
-              <h5 className="text-sm font-medium text-gray-900">
-                {subSubcategory.titleEn}
-              </h5>
-              {subSubcategory.titleAr && (
-                <p className="text-xs text-gray-600 mt-1 rtl" dir="rtl">
-                  {subSubcategory.titleAr}
-                </p>
-              )}
-            </div>
+          <div>
+            <h5 style={{fontSize: 'var(--font-size-sm)', fontWeight: '500', color: 'var(--color-text-primary)', margin: '0'}}>
+              {subSubcategory.titleEn}
+            </h5>
+            {subSubcategory.titleAr && (
+              <p className="rtl" dir="rtl" style={{fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', margin: 'var(--spacing-xs) 0 0 0'}}>
+                {subSubcategory.titleAr}
+              </p>
+            )}
           </div>
           
           {/* Content preview */}
-          <div className="mt-2 space-y-1">
+          <div style={{marginTop: 'var(--spacing-sm)'}}>
             {subSubcategory.contentEn && (
-              <div className="text-xs text-gray-700">
+              <div style={{fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--spacing-xs)'}}>
                 <FormattedContent 
-                  content={subSubcategory.contentEn.length > 120 
-                    ? subSubcategory.contentEn.substring(0, 120) + '...'
+                  content={subSubcategory.contentEn.length > 100 
+                    ? subSubcategory.contentEn.substring(0, 100) + '...'
                     : subSubcategory.contentEn
                   }
-                  className="line-clamp-2"
+                  className="formatted-content"
                 />
               </div>
             )}
             {subSubcategory.contentAr && (
-              <div className="text-xs text-gray-700 rtl" dir="rtl">
+              <div className="rtl" dir="rtl" style={{fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)'}}>
                 <FormattedContent 
-                  content={subSubcategory.contentAr.length > 120 
-                    ? subSubcategory.contentAr.substring(0, 120) + '...'
+                  content={subSubcategory.contentAr.length > 100 
+                    ? subSubcategory.contentAr.substring(0, 100) + '...'
                     : subSubcategory.contentAr
                   }
-                  className="line-clamp-2"
+                  className="formatted-content"
                 />
               </div>
             )}
@@ -103,19 +97,21 @@ const SubSubcategoryRow = ({
         </div>
         
         {/* Action buttons */}
-        <div className="flex items-center space-x-1 ml-4">
+        <div className="flex items-center" style={{gap: 'var(--spacing-xs)', marginLeft: 'var(--spacing-sm)'}}>
           <button
             onClick={handleEdit}
-            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="action-btn"
             title="Edit sub-sub category"
+            style={{minWidth: '28px', minHeight: '28px', padding: 'var(--spacing-xs)'}}
           >
             <Edit2 className="h-3 w-3" />
           </button>
           
           <button
             onClick={handleDelete}
-            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="action-btn danger"
             title="Delete sub-sub category"
+            style={{minWidth: '28px', minHeight: '28px', padding: 'var(--spacing-xs)'}}
           >
             <Trash2 className="h-3 w-3" />
           </button>
@@ -123,8 +119,9 @@ const SubSubcategoryRow = ({
           <button
             onClick={handleMoveUp}
             disabled={!canMoveUp}
-            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="action-btn"
             title="Move up"
+            style={{minWidth: '28px', minHeight: '28px', padding: 'var(--spacing-xs)'}}
           >
             <ChevronUp className="h-3 w-3" />
           </button>
@@ -132,8 +129,9 @@ const SubSubcategoryRow = ({
           <button
             onClick={handleMoveDown}
             disabled={!canMoveDown}
-            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="action-btn"
             title="Move down"
+            style={{minWidth: '28px', minHeight: '28px', padding: 'var(--spacing-xs)'}}
           >
             <ChevronDown className="h-3 w-3" />
           </button>
