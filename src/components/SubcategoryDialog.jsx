@@ -6,14 +6,20 @@ import { createSubcategory, updateSubcategory } from '../services/contentService
 
 const SubcategoryDialog = () => {
   const { subcategoryModal, closeSubcategoryModal, setError } = useContentStore();
-  const { isOpen, mode, categoryId, subcategory } = subcategoryModal;
+  const { isOpen, mode, categoryId, subcategory, parentSubcategoryId } = subcategoryModal;
+  
+  const isSubSubCategory = !!parentSubcategoryId;
+  const modalTitle = isSubSubCategory 
+    ? (mode === 'add' ? 'Add Sub-Sub Category' : 'Edit Sub-Sub Category')
+    : (mode === 'add' ? 'Add Subcategory' : 'Edit Subcategory');
 
   const [formData, setFormData] = useState({
     titleEn: '',
     titleAr: '',
     contentEn: '',
     contentAr: '',
-    colorHex: '#37B24D'
+    colorHex: '#37B24D',
+    hasContent: true // Whether this subcategory should have content or be a parent container
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -27,7 +33,8 @@ const SubcategoryDialog = () => {
           titleAr: subcategory.titleAr || '',
           contentEn: subcategory.contentEn || '',
           contentAr: subcategory.contentAr || '',
-          colorHex: subcategory.colorHex || '#37B24D'
+          colorHex: subcategory.colorHex || '#37B24D',
+          hasContent: subcategory.hasContent !== false // Default to true for existing items
         });
       } else {
         setFormData({
@@ -35,12 +42,13 @@ const SubcategoryDialog = () => {
           titleAr: '',
           contentEn: '',
           contentAr: '',
-          colorHex: '#37B24D'
+          colorHex: '#37B24D',
+          hasContent: isSubSubCategory ? true : true // Sub-sub categories always have content, subcategories default to true
         });
       }
       setErrors({});
     }
-  }, [isOpen, mode, subcategory]);
+  }, [isOpen, mode, subcategory, isSubSubCategory]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -53,11 +61,14 @@ const SubcategoryDialog = () => {
       newErrors.titleAr = 'Arabic title is required';
     }
 
-    if (!formData.contentEn.trim()) {
+    // Content is required for sub-sub categories or when hasContent is true
+    const shouldHaveContent = isSubSubCategory || formData.hasContent;
+    
+    if (shouldHaveContent && !formData.contentEn.trim()) {
       newErrors.contentEn = 'English content is required';
     }
 
-    if (!formData.contentAr.trim()) {
+    if (shouldHaveContent && !formData.contentAr.trim()) {
       newErrors.contentAr = 'Arabic content is required';
     }
 
@@ -93,14 +104,14 @@ const SubcategoryDialog = () => {
     
     try {
       if (mode === 'add') {
-        await createSubcategory(categoryId, formData);
+        await createSubcategory(categoryId, formData, parentSubcategoryId);
       } else {
         await updateSubcategory(subcategory.id, formData);
       }
       closeSubcategoryModal();
     } catch (error) {
       console.error('Error saving subcategory:', error);
-      setError(`Failed to ${mode} subcategory`);
+      setError(`Failed to ${mode} ${isSubSubCategory ? 'sub-sub category' : 'subcategory'}`);
     } finally {
       setLoading(false);
     }
@@ -124,7 +135,7 @@ const SubcategoryDialog = () => {
         >
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-lg font-semibold text-gray-900">
-              {mode === 'add' ? 'Add Subcategory' : 'Edit Subcategory'}
+              {modalTitle}
             </Dialog.Title>
             <Dialog.Close asChild>
               <button
@@ -181,7 +192,45 @@ const SubcategoryDialog = () => {
               )}
             </div>
 
-            {/* English Content */}
+            {/* Content Type Toggle - Only for subcategories, not sub-sub categories */}
+            {!isSubSubCategory && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Subcategory Type
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="subcategoryType"
+                      checked={formData.hasContent}
+                      onChange={() => handleInputChange('hasContent', true)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">
+                      Content Subcategory - Contains text content
+                    </span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="subcategoryType"
+                      checked={!formData.hasContent}
+                      onChange={() => handleInputChange('hasContent', false)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">
+                      Parent Subcategory - Contains sub-sub categories only
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Content Fields - Only show if has content or is sub-sub category */}
+            {(formData.hasContent || isSubSubCategory) && (
+              <>
+                {/* English Content */}
             <div>
               <label htmlFor="contentEn" className="block text-sm font-medium text-gray-700 mb-2">
                 Content EN *
@@ -230,6 +279,8 @@ const SubcategoryDialog = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.contentAr}</p>
               )}
             </div>
+              </>
+            )}
 
             {/* Color */}
             <div>

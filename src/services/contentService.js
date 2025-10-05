@@ -98,37 +98,79 @@ export const watchSubcategories = (categoryId, callback) => {
   );
   
   return onSnapshot(q, (snapshot) => {
-    const subcategories = snapshot.docs.map(doc => ({
+    const allSubcategories = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
     
-    // Sort by order in JavaScript to avoid composite index requirement
-    subcategories.sort((a, b) => (a.order || 0) - (b.order || 0));
+    // Separate level 1 (subcategories) and level 2 (sub-sub categories)
+    const level1Items = allSubcategories.filter(item => item.level === 1 || !item.level); // Handle existing data without level
+    const level2Items = allSubcategories.filter(item => item.level === 2);
     
-    callback(subcategories);
+    // Sort level 1 items by order
+    level1Items.sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    // Build hierarchical structure
+    const hierarchicalSubcategories = level1Items.map(subcategory => {
+      // Find all sub-sub categories for this subcategory
+      const subSubCategories = level2Items
+        .filter(item => item.parentSubcategoryId === subcategory.id)
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
+      
+      return {
+        ...subcategory,
+        level: subcategory.level || 1, // Handle existing data
+        subSubCategories
+      };
+    });
+    
+    callback(hierarchicalSubcategories);
   });
 };
 
-export const createSubcategory = async (categoryId, subcategoryData) => {
-  // Get the highest order value for this category and increment by 1
-  const q = query(
-    subcategoriesRef,
-    where('categoryId', '==', categoryId),
-    orderBy('order', 'desc')
-  );
+export const createSubcategory = async (categoryId, subcategoryData, parentSubcategoryId = null) => {
+  const level = parentSubcategoryId ? 2 : 1; // 1 for subcategory, 2 for sub-sub category
+  
+  // Get the highest order value for this category/parent and increment by 1
+  let q;
+  if (level === 1) {
+    // For subcategories, order within category and same level
+    q = query(
+      subcategoriesRef,
+      where('categoryId', '==', categoryId),
+      where('level', '==', 1),
+      orderBy('order', 'desc')
+    );
+  } else {
+    // For sub-sub categories, order within parent subcategory
+    q = query(
+      subcategoriesRef,
+      where('parentSubcategoryId', '==', parentSubcategoryId),
+      where('level', '==', 2),
+      orderBy('order', 'desc')
+    );
+  }
+  
   const snapshot = await getDocs(q);
   const highestOrder = snapshot.empty ? 0 : snapshot.docs[0].data().order;
   
   const newSubcategory = {
     ...subcategoryData,
     categoryId,
+    parentSubcategoryId,
+    level,
     order: highestOrder + 1,
+    hasContent: level === 2 || (subcategoryData.contentEn || subcategoryData.contentAr), // Sub-sub categories always have content, subcategories have content if provided
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   };
   
   return await addDoc(subcategoriesRef, newSubcategory);
+};
+
+// Create a sub-sub category under a subcategory
+export const createSubSubcategory = async (categoryId, parentSubcategoryId, subSubcategoryData) => {
+  return await createSubcategory(categoryId, subSubcategoryData, parentSubcategoryId);
 };
 
 export const updateSubcategory = async (subcategoryId, updates) => {
@@ -140,8 +182,24 @@ export const updateSubcategory = async (subcategoryId, updates) => {
 };
 
 export const deleteSubcategory = async (subcategoryId) => {
+  const batch = writeBatch(db);
+  
+  // Delete the subcategory itself
   const subcategoryDoc = doc(db, 'subcategories', subcategoryId);
-  return await deleteDoc(subcategoryDoc);
+  batch.delete(subcategoryDoc);
+  
+  // Delete all sub-sub categories that belong to this subcategory
+  const subSubCategoriesQuery = query(
+    subcategoriesRef,
+    where('parentSubcategoryId', '==', subcategoryId)
+  );
+  const subSubCategoriesSnapshot = await getDocs(subSubCategoriesQuery);
+  
+  subSubCategoriesSnapshot.forEach((subSubCategoryDoc) => {
+    batch.delete(subSubCategoryDoc.ref);
+  });
+  
+  return await batch.commit();
 };
 
 export const reorderSubcategories = async (categoryId, updatesArray) => {

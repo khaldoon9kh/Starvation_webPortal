@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus, FolderOpen, BookOpen, Image, FileText } from 'lucide-react';
+import { auth } from '../lib/firebase';
 import { useContentStore } from '../store/useContentStore';
 import { 
   watchCategories, 
@@ -71,8 +72,8 @@ const AdminPage = () => {
     if (!newCategoryTitle.trim()) return;
 
     // Debug: Check auth state
-    console.log('Current user:', auth.currentUser);
-    console.log('User ID:', auth.currentUser?.uid);
+    //console.log('Current user:', auth.currentUser);
+    //console.log('User ID:', auth.currentUser?.uid);
     
     setIsAddingCategory(true);
     try {

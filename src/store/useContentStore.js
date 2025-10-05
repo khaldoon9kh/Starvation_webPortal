@@ -16,6 +16,7 @@ export const useContentStore = create((set, get) => ({
     mode: 'add', // 'add' | 'edit'
     categoryId: null,
     subcategory: null,
+    parentSubcategoryId: null,
   },
   
   confirmDialog: {
@@ -49,13 +50,14 @@ export const useContentStore = create((set, get) => ({
   setError: (error) => set({ error }),
   
   // Modal actions
-  openSubcategoryModal: (mode, categoryId, subcategory = null) =>
+  openSubcategoryModal: (mode, categoryId, subcategory = null, parentSubcategoryId = null) =>
     set({
       subcategoryModal: {
         isOpen: true,
         mode,
         categoryId,
-        subcategory
+        subcategory,
+        parentSubcategoryId
       }
     }),
   
@@ -65,7 +67,8 @@ export const useContentStore = create((set, get) => ({
         isOpen: false,
         mode: 'add',
         categoryId: null,
-        subcategory: null
+        subcategory: null,
+        parentSubcategoryId: null
       }
     }),
   
