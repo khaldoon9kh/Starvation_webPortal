@@ -1,6 +1,7 @@
 import { Edit2, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { useContentStore } from '../store/useContentStore';
 import { deleteSubcategory, moveSubcategoryUp, moveSubcategoryDown } from '../services/contentService';
+import FormattedContent from './FormattedContent';
 
 const SubcategoryRow = ({ subcategory, categoryId, canMoveUp, canMoveDown, subcategories }) => {
   const { openSubcategoryModal, openConfirmDialog, setError } = useContentStore();
@@ -70,20 +71,26 @@ const SubcategoryRow = ({ subcategory, categoryId, canMoveUp, canMoveDown, subca
           {/* Content preview */}
           <div className="mt-2 space-y-1">
             {subcategory.contentEn && (
-              <p className="text-sm text-gray-700 line-clamp-2">
-                {subcategory.contentEn.length > 100 
-                  ? subcategory.contentEn.substring(0, 100) + '...'
-                  : subcategory.contentEn
-                }
-              </p>
+              <div className="text-sm text-gray-700">
+                <FormattedContent 
+                  content={subcategory.contentEn.length > 150 
+                    ? subcategory.contentEn.substring(0, 150) + '...'
+                    : subcategory.contentEn
+                  }
+                  className="line-clamp-3"
+                />
+              </div>
             )}
             {subcategory.contentAr && (
-              <p className="text-sm text-gray-700 line-clamp-2 rtl" dir="rtl">
-                {subcategory.contentAr.length > 100 
-                  ? subcategory.contentAr.substring(0, 100) + '...'
-                  : subcategory.contentAr
-                }
-              </p>
+              <div className="text-sm text-gray-700 rtl" dir="rtl">
+                <FormattedContent 
+                  content={subcategory.contentAr.length > 150 
+                    ? subcategory.contentAr.substring(0, 150) + '...'
+                    : subcategory.contentAr
+                  }
+                  className="line-clamp-3"
+                />
+              </div>
             )}
           </div>
         </div>

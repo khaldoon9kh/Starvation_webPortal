@@ -185,16 +185,19 @@ const SubcategoryDialog = () => {
             <div>
               <label htmlFor="contentEn" className="block text-sm font-medium text-gray-700 mb-2">
                 Content EN *
+                <span className="text-xs text-gray-500 font-normal ml-2">
+                  (Supports **bold**, *italic*, [links](url), and line breaks)
+                </span>
               </label>
               <textarea
                 id="contentEn"
-                rows={4}
+                rows={6}
                 value={formData.contentEn}
                 onChange={(e) => handleInputChange('contentEn', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical ${
                   errors.contentEn ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500'
                 }`}
-                placeholder="Enter English content"
+                placeholder="Enter content with markdown formatting:\n\n**Bold text** for emphasis\n*Italic text* for style\n[Link text](https://example.com) for links\n\nNew lines are preserved!"
                 required
               />
               {errors.contentEn && (
@@ -206,10 +209,13 @@ const SubcategoryDialog = () => {
             <div>
               <label htmlFor="contentAr" className="block text-sm font-medium text-gray-700 mb-2">
                 Content AR *
+                <span className="text-xs text-gray-500 font-normal ml-2">
+                  (يدعم **النص الغامق**، *النص المائل*، والروابط)
+                </span>
               </label>
               <textarea
                 id="contentAr"
-                rows={4}
+                rows={6}
                 dir="rtl"
                 value={formData.contentAr}
                 onChange={(e) => handleInputChange('contentAr', e.target.value)}
@@ -217,7 +223,7 @@ const SubcategoryDialog = () => {
                 className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical text-right ${
                   errors.contentAr ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500'
                 }`}
-                placeholder="أدخل المحتوى بالعربية"
+                placeholder="أدخل المحتوى بالعربية:\n\n**نص غامق** للتأكيد\n*نص مائل* للأسلوب\n[نص الرابط](https://example.com) للروابط\n\nالأسطر الجديدة محفوظة!"
                 required
               />
               {errors.contentAr && (
@@ -292,8 +298,75 @@ const SubcategoryDialog = () => {
             </div>
           </form>
 
-          <div className="mt-4 text-xs text-gray-500">
-            <p>Tip: Press Ctrl+Enter (or Cmd+Enter) to save quickly</p>
+          {/* Formatting Help */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">📝 Formatting Guide</h4>
+            <div className="text-xs text-gray-600 space-y-4">
+              
+              {/* Basic Formatting */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="font-medium mb-2">🎨 Basic Formatting:</p>
+                  <ul className="space-y-1">
+                    <li><code>**Bold text**</code> → <strong>Bold text</strong></li>
+                    <li><code>*Italic text*</code> → <em>Italic text</em></li>
+                    <li><code>[Link](url)</code> → <a href="#" className="text-blue-600 underline">Link</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium mb-2" dir="rtl">🎨 التنسيق الأساسي:</p>
+                  <ul className="space-y-1" dir="rtl">
+                    <li><code>**نص غامق**</code> → <strong>نص غامق</strong></li>
+                    <li><code>*نص مائل*</code> → <em>نص مائل</em></li>
+                    <li><code>[رابط](url)</code> → <a href="#" className="text-blue-600 underline">رابط</a></li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Lists */}
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-300">
+                <div>
+                  <p className="font-medium mb-2">📋 Lists:</p>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-gray-700 mb-1">Bullet Lists:</p>
+                      <pre className="text-xs bg-white p-2 rounded border">- First item{'\n'}- Second item{'\n'}- Third item</pre>
+                    </div>
+                    <div>
+                      <p className="text-gray-700 mb-1">Numbered Lists:</p>
+                      <pre className="text-xs bg-white p-2 rounded border">1. First step{'\n'}2. Second step{'\n'}3. Third step</pre>
+                    </div>
+                    <div>
+                      <p className="text-gray-700 mb-1">Nested Lists:</p>
+                      <pre className="text-xs bg-white p-2 rounded border">- Main item{'\n'}  - Sub item{'\n'}  - Another sub</pre>
+                    </div>
+                  </div>
+                </div>
+                <div dir="rtl">
+                  <p className="font-medium mb-2">📋 القوائم:</p>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-gray-700 mb-1">القوائم النقطية:</p>
+                      <pre className="text-xs bg-white p-2 rounded border" dir="rtl">- العنصر الأول{'\n'}- العنصر الثاني{'\n'}- العنصر الثالث</pre>
+                    </div>
+                    <div>
+                      <p className="text-gray-700 mb-1">القوائم المرقمة:</p>
+                      <pre className="text-xs bg-white p-2 rounded border" dir="rtl">1. الخطوة الأولى{'\n'}2. الخطوة الثانية{'\n'}3. الخطوة الثالثة</pre>
+                    </div>
+                    <div>
+                      <p className="text-gray-700 mb-1">القوائم المتداخلة:</p>
+                      <pre className="text-xs bg-white p-2 rounded border" dir="rtl">- عنصر رئيسي{'\n'}  - عنصر فرعي{'\n'}  - عنصر فرعي آخر</pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-gray-200">
+                <p className="text-gray-500">
+                  💡 <strong>Tips:</strong> Use 2 spaces for nested items • Press Ctrl+Enter (Cmd+Enter) to save quickly • Line breaks are preserved automatically
+                </p>
+              </div>
+            </div>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

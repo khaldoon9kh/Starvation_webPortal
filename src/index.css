@@ -2,7 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles for Arabic text direction */
+/* Custom styles for Arabic te/* Optional: Add a subtle gradient */
+.subcategory-dialog-content {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+}
+
+/* Formatted content styling */
+.formatted-content {
+  line-height: 1.6;
+}
+
+.formatted-content p {
+  margin-bottom: 0.5rem;
+}
+
+.formatted-content p:last-child {
+  margin-bottom: 0;
+}
+
+.formatted-content strong {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.formatted-content a {
+  color: #2563eb;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.formatted-content a:hover {
+  color: #1d4ed8;
+}
+
+.formatted-content ul,
+.formatted-content ol {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+.formatted-content li {
+  margin-bottom: 0.25rem;
+}
+
+/* Enhanced line clamp for formatted content */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}irection */
 .rtl {
   direction: rtl;
 }
